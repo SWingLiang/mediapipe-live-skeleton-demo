@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import https from 'node:https';
@@ -49,7 +49,6 @@ function downloadFile(url, targetPath) {
       response.on('data', (chunk) => chunks.push(chunk));
       response.on('end', () => {
         mkdirSync(dirname(targetPath), { recursive: true });
-        const { writeFileSync } = await import('node:fs');
         writeFileSync(targetPath, Buffer.concat(chunks));
         resolvePromise();
       });
