@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Camera, Eye, Hash, RotateCcw, Sparkles, Waves } from 'lucide-react';
 
 export type DemoOptions = {
@@ -25,7 +26,7 @@ function ToggleButton({
   active: boolean;
   disabled?: boolean;
   label: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   onClick: () => void;
 }) {
   return (
