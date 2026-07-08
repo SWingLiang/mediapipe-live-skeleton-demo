@@ -53,6 +53,7 @@ export const POSE_CONNECTIONS: Array<[number, number]> = [
 ];
 
 const WASM_SOURCES = [
+  '/wasm',
   'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm',
   'https://unpkg.com/@mediapipe/tasks-vision@latest/wasm'
 ];
@@ -112,7 +113,7 @@ export async function createPoseRuntime(
   }
 
   throw new Error(
-    `MediaPipe 初始化失败。请确认网络可访问模型资源，或将 pose_landmarker.task 放入 public/models。${String(
+    `MediaPipe 初始化失败。请确认 /wasm 与 /models/pose_landmarker.task 已部署，或确认网络可以访问备用模型资源。${String(
       lastError ?? ''
     )}`
   );
