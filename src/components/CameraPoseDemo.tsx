@@ -119,54 +119,58 @@ export function CameraPoseDemo() {
     rafRef.current = requestAnimationFrame(predictLoop);
   }, []);
 
-  const startCamera = useCallback(async () => {
-    setError('');
-    setIsLoading(true);
-    setStatus('正在请求摄像头权限...');
+  const startCamera = useCallback(
+    async (mode: 'user' | 'environment' = facingMode) => {
+      setError('');
+      setIsLoading(true);
+      setStatus('正在请求摄像头权限...');
 
-    try {
-      if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error('当前浏览器不支持摄像头调用。请使用 Safari、Chrome 或 Edge 的较新版本。');
-      }
-
-      stopCamera();
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {
-          facingMode,
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-          frameRate: { ideal: 30, max: 30 }
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error('当前浏览器不支持摄像头调用。请使用 Safari、Chrome 或 Edge 的较新版本。');
         }
-      });
 
-      streamRef.current = stream;
-      const video = videoRef.current;
-      if (!video) throw new Error('视频元素初始化失败。');
-      video.srcObject = stream;
-      video.muted = true;
-      video.playsInline = true;
-      await video.play();
+        stopCamera();
+        setStatus('正在请求摄像头权限...');
 
-      if (!runtimeRef.current) {
-        const runtime = await createPoseRuntime(setStatus);
-        runtimeRef.current = runtime;
-        setDelegate(runtime.delegate);
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            facingMode: mode,
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            frameRate: { ideal: 30, max: 30 }
+          }
+        });
+
+        streamRef.current = stream;
+        const video = videoRef.current;
+        if (!video) throw new Error('视频元素初始化失败。');
+        video.srcObject = stream;
+        video.muted = true;
+        video.playsInline = true;
+        await video.play();
+
+        if (!runtimeRef.current) {
+          const runtime = await createPoseRuntime(setStatus);
+          runtimeRef.current = runtime;
+          setDelegate(runtime.delegate);
+        }
+
+        setIsRunning(true);
+        setStatus('识别中：请站到镜头前');
+        rafRef.current = requestAnimationFrame(predictLoop);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        stopCamera();
+        setError(message);
+        setStatus('启动失败');
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsRunning(true);
-      setStatus('识别中：请站到镜头前');
-      rafRef.current = requestAnimationFrame(predictLoop);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setError(message);
-      setStatus('启动失败');
-      stopCamera();
-    } finally {
-      setIsLoading(false);
-    }
-  }, [facingMode, predictLoop, stopCamera]);
+    },
+    [facingMode, predictLoop, stopCamera]
+  );
 
   const switchCamera = useCallback(() => {
     const nextFacingMode = facingMode === 'user' ? 'environment' : 'user';
@@ -175,7 +179,7 @@ export function CameraPoseDemo() {
     if (isRunning) {
       stopCamera();
       window.setTimeout(() => {
-        void startCamera();
+        void startCamera(nextFacingMode);
       }, 120);
     }
   }, [facingMode, isRunning, startCamera, stopCamera]);
@@ -233,7 +237,7 @@ export function CameraPoseDemo() {
         <button
           type="button"
           className={`primary-action ${isRunning ? 'is-stop' : ''}`}
-          onClick={isRunning ? stopCamera : startCamera}
+          onClick={isRunning ? stopCamera : () => void startCamera()}
           disabled={isLoading}
         >
           {isRunning ? <CircleStop size={18} /> : <Play size={18} />}
