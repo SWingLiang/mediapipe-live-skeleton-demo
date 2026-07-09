@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "prepare:mediapipe": "node scripts/prepare-mediapipe-assets.mjs",
-    "build": "npm run prepare:mediapipe && tsc -b && vite build",
+    "build": "npm run prepare:mediapipe && vite build",
+    "typecheck": "tsc -b",
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
