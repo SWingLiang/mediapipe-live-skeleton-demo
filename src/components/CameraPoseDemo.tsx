@@ -13,6 +13,10 @@ const DEFAULT_OPTIONS: DemoOptions = {
   mirror: true
 };
 
+function isLocalhost() {
+  return ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+}
+
 export function CameraPoseDemo() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -126,8 +130,12 @@ export function CameraPoseDemo() {
       setStatus('正在请求摄像头权限...');
 
       try {
+        if (!window.isSecureContext && !isLocalhost()) {
+          throw new Error('当前页面不是 HTTPS 安全连接，浏览器会禁止摄像头调用。请使用 https://poseread.liang-lib.tech 访问。');
+        }
+
         if (!navigator.mediaDevices?.getUserMedia) {
-          throw new Error('当前浏览器不支持摄像头调用。请使用 Safari、Chrome 或 Edge 的较新版本。');
+          throw new Error('当前浏览器没有开放摄像头接口。请使用 Safari、Chrome 或 Edge 的较新版本，并确认已允许摄像头权限。');
         }
 
         stopCamera();
